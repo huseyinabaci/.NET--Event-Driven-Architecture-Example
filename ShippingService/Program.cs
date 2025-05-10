@@ -11,7 +11,9 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("host.docker.internal", "/", h =>
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        
+        cfg.Host(host, "/", h =>
         {
             h.Username("guest");
             h.Password("guest");

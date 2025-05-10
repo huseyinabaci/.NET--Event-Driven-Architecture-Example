@@ -3,12 +3,14 @@ using Shared.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// RabbitMQ bağlantı bilgilerini ve MassTransit yapılandırmasını ekleyelim
+// RabbitMQ baÄŸlantÄ± bilgilerini ve MassTransit yapÄ±landÄ±rmasÄ±nÄ± ekleyelim
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        
+        cfg.Host(host, "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
@@ -32,7 +34,7 @@ app.UseHttpsRedirection();
 
 app.MapPost("/create-order", async (IBus bus, OrderCreatedEvent order) =>
 {
-    // Sipariş event'ini RabbitMQ'ya publish edelim
+    // SipariÅŸ event'ini RabbitMQ'ya publish edelim
     await bus.Publish(order);
     return Results.Ok($"Order {order.OrderId} created!");
 });

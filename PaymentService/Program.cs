@@ -3,20 +3,22 @@ using PaymentService.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// RabbitMQ baðlantýsý ve MassTransit yapýlandýrmasý
+// RabbitMQ baÄŸlantÄ±sÄ± ve MassTransit yapÄ±landÄ±rmasÄ±
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<OrderCreatedEventConsumer>(); // Consumer'ý tanýt
+    x.AddConsumer<OrderCreatedEventConsumer>(); // Consumer'Ä± tanÄ±t
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("host.docker.internal", "/", h =>
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        
+        cfg.Host(host, "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
         });
 
-        // Önemli: Bu kuyruk tanýmý olmazsa event'ler hiçbir yere gitmez
+        // Ã–nemli: Bu kuyruk tanÄ±mÄ± olmazsa event'ler hiÃ§bir yere gitmez
         cfg.ReceiveEndpoint("order-created-event-queue", e =>
         {
             e.ConfigureConsumer<OrderCreatedEventConsumer>(context);
